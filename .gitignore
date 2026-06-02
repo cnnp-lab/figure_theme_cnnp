@@ -1,0 +1,14 @@
+# Generated figure output from test_theme_cnnp.R
+test_out/
+
+# Claude Code local settings (machine-specific)
+.claude/settings.local.json
+
+# R session / history
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# macOS
+.DS_Store
