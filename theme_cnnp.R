@@ -30,7 +30,7 @@ CNNP_FONT <- cnnp_font()
 
 # gutter (in pt) is the white separation drawn between panels in a multi-panel
 # (patchwork) figure — see the plot.background note below. Tune per project.
-theme_cnnp <- function(base_size = 8, base_family = CNNP_FONT, gutter = 3) {
+theme_cnnp <- function(base_size = 8, base_family = CNNP_FONT, gutter = 1) {
   theme_classic(base_size = base_size, base_family = base_family) %+replace%
     theme(
       axis.line         = element_line(linewidth = 0.25, color = cnnp_dark[["midnight"]]),
