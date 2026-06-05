@@ -110,6 +110,7 @@ cnnp_light <- c(
 
 cnnp_dark <- c(
   brown = "#3d2307",   # brand brown
+  mustard = "#f7b51f", # mustard 
   teal = "#005d76",    # teal
   midnight = "#223344"    # midnight — axis lines, ticks, text
 )
@@ -374,7 +375,7 @@ ggsave_cnnp <- function(plot, filename, out_dir = ".",
 # annotate() calls (which bypass geom defaults) reference them directly. Colour
 # matches the axis chrome so labels and axes stay in lockstep.
 CNNP_LABEL_COLOUR <- unname(cnnp_dark["midnight"])
-CNNP_LABEL_SIZE   <- 2.6
+CNNP_LABEL_SIZE   <- 2.82   # 8 pt 
 
 # ── Geom defaults ─────────────────────────────────────────────────────────────
 # Call once per session after sourcing this file to give every geom a neutral
