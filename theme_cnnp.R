@@ -105,7 +105,8 @@ cnnp_purple <- c(
 # Brand colours: light and dark pairs of cream + teal.
 cnnp_light <- c(
   cream = "#fffdef",   # panel background, soft branded fills
-  teal  = "#9dc2cc"    # soft teal — secondary branded marks/outlines
+  teal  = "#9dc2cc",   # soft teal — secondary branded marks/outlines
+  bluegrey = "#66808e"    # blue-grey — can be matched with midnight for a secondary dark/medium pair
 )
 
 cnnp_dark <- c(
