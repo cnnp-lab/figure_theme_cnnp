@@ -60,19 +60,26 @@ theme_cnnp(base_size = 8, base_family = CNNP_FONT, gutter = 3)
 
 ## Colour
 
-All palettes are colour-blind-safe primitives. The named vectors are exported so
-you can pull a single swatch when you need one:
+The colour system splits cleanly into **structural** colours (never carry data
+meaning) and **data** colours. The full rules live in a usage-guidelines block at
+the top of [`theme_cnnp.R`](theme_cnnp.R); the exported objects are:
 
-| Vector | Use |
-|---|---|
-| `cnnp_okabe_ito` | 8 categorical hues (orange, sky_blue, green, yellow, blue, vermillion, pink, black) |
-| `cnnp_greys` | structural greys (backgrounds, gridlines, reference marks) — *not* for data categories |
-| `cnnp_purple` | reserved 9th hue / light–dark pair for a secondary axis |
-| `cnnp_light` / `cnnp_dark` | brand colours (`cream`, `teal`; `brown`, `teal`, `midnight`) |
+| Object | Kind | Use |
+|---|---|---|
+| `cnnp_neutral` | structural | brand chrome: `cream` (background only), `midnight` (axes/ticks/text), `bluegrey` (secondary structure), `brown` (brand stand-in for midnight) |
+| `cnnp_greys` | structural | pure-neutral ramp (no brand hue) for geom defaults: reference lines, ribbons, NA fills — *not* for data categories |
+| `cnnp_pairs` | data | brand plot colours as dark/light pairs: `teal`, `mustard`, `purple` (priority teal > mustard > purple). `dark` = primary/foreground, `light` = secondary/background |
+| `cnnp_okabe_ito` | data | 8 colour-blind-safe categorical hues, for many unordered levels |
 
 ```r
-cnnp_dark[["midnight"]]   # "#223344"
+cnnp_neutral[["midnight"]]    # "#223344"  (structural chrome)
+cnnp_pairs$teal[["dark"]]     # "#005d76"  (a brand data colour)
 ```
+
+A few rules worth knowing (see the file header for the rest): don't mix
+`cnnp_pairs` with Okabe-Ito hues in the same panel; only `midnight`/`cream` from
+`cnnp_neutral` should appear alongside Okabe-Ito; and `cnnp_okabe_ito` is fully
+colour-blind-safe whereas `cnnp_pairs` is not guaranteed to be.
 
 ### Discrete scales
 
@@ -240,9 +247,13 @@ title = cnnp_ascii("Gallery — double column")    # — becomes -
 
 ## Worked example
 
-[`test_theme_cnnp.R`](test_theme_cnnp.R) renders five figures across all three
+[`test_theme_cnnp.R`](test_theme_cnnp.R) renders six figures across all three
 widths and is the best reference for real usage:
 
+- **fig0** (double) — the colour system, visualised: a labelled swatch card of
+  every palette (structural · brand pairs · Okabe-Ito) over a row of worked
+  examples (teal alone, teal+mustard pair, Okabe-Ito for many categories,
+  diverging scale). Look here first to understand the colour guidelines.
 - **fig1** (single) — scatter + smooth + discrete legend, reference line, caption
 - **fig2** (onehalf) — faceted boxplot + jitter
 - **fig3** (double) — patchwork gallery: scatter, bars, time series, sequential &

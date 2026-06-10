@@ -1,10 +1,67 @@
 # CNNP lab ggplot2 theme and colour scales.
 # Usage:
 #   source("theme_cnnp.R")
-#   p + theme_cnnp() + scale_fill_cnnp("circadian_lifestyle")
+#   p + theme_cnnp() + scale_colour_cnnp_d()
 #   p + theme_cnnp() + scale_fill_cnnp(c(a = "#E69F00", b = "#56B4E9"))
 
 library(ggplot2)
+
+# ==============================================================================
+# CNNP COLOUR SYSTEM — USAGE GUIDELINES
+# ==============================================================================
+#
+# 1. STRUCTURAL ELEMENTS  (never carry data meaning)
+#    cnnp_neutral:
+#      midnight  axes, ticks, all text labels, panel borders
+#      bluegrey  secondary gridlines, reference lines, non-data structure
+#      cream     plot background only — never use as a data colour
+#      brown     brand stand-in for midnight (e.g. print/brand contexts only);
+#                not for data
+#    cnnp_greys:
+#      for geom defaults (reference lines, ribbons, NA fills) — pure neutral,
+#      no brand hue. Distinct from cnnp_neutral, which carries brand identity.
+#      Do not use cnnp_greys for science categories.
+#
+# 2. BRAND PLOT COLOURS  (primary data colours)
+#    cnnp_pairs — teal, mustard, purple — for markers, lines, fills, and other
+#    data-carrying elements. Priority order:
+#      a. teal and mustard are first choice. Either may be used alone as a
+#         single colour, or together as a contrasting pair.
+#      b. purple is a fallback for paired categories only, when both teal and
+#         mustard are already committed in the same figure.
+#      c. Within a pair, dark = primary condition/foreground; light = secondary
+#         or background. Both together signal a paired relationship.
+#         Either may be used alone — pairs are not required to appear together.
+#
+# 3. OKABE-ITO  (many unordered categorical levels)
+#    Use when you have more categories than cnnp_pairs can accommodate, or when
+#    categorical distinctiveness across many levels is the priority.
+#    Rules:
+#      - Do NOT mix with cnnp_pairs colours in the same panel. In multi-panel
+#        figures, keep them in separate panels with a clear rationale.
+#      - Only midnight and cream from cnnp_neutral may appear alongside
+#        Okabe-Ito (for structure only — axes, background).
+#      - Avoid sky_blue, blue, and black unless all other OI colours are taken:
+#        sky_blue and blue clash with brand teal; black clashes with midnight.
+#      - mustard (light or dark) must not appear alongside OI orange or OI
+#        yellow in the same panel.
+#
+# 4. CONTINUOUS SCALES
+#    Sequential (scale_fill_seq_cnnp / scale_fill_gradient_cnnp):
+#      Low end is white, not cream. This is intentional: low values on a cream
+#      panel background would be invisible. Do not "fix" this to cream.
+#    Diverging (scale_fill_gradient2_cnnp):
+#      Poles are vermillion (negative) and dark teal (positive). Vermillion is
+#      an Okabe-Ito colour. If a figure also uses Okabe-Ito categorical colours,
+#      ensure no category is assigned vermillion — it will clash with the
+#      diverging scale's negative pole.
+#
+# 5. COLOURBLIND SAFETY
+#    cnnp_okabe_ito is fully colourblind-safe. cnnp_pairs is not guaranteed
+#    colourblind-safe on its own. If accessibility is a hard requirement, prefer
+#    Okabe-Ito throughout, or verify cnnp_pairs choices with a simulator.
+#
+# ==============================================================================
 
 # ── Typography ────────────────────────────────────────────────────────────────
 # Resolve the lab's base sans-serif. Helvetica is preferred because it is one of
@@ -26,64 +83,44 @@ cnnp_font <- function(prefer = c("Helvetica", "Arial")) {
 
 CNNP_FONT <- cnnp_font()
 
-# ── Theme ─────────────────────────────────────────────────────────────────────
+# ── Palettes ──────────────────────────────────────────────────────────────────
 
-# gutter (in pt) is the white separation drawn between panels in a multi-panel
-# (patchwork) figure — see the plot.background note below. Tune per project.
-theme_cnnp <- function(base_size = 8, base_family = CNNP_FONT, gutter = 1) {
-  theme_classic(base_size = base_size, base_family = base_family) %+replace%
-    theme(
-      axis.line         = element_line(linewidth = 0.25, color = cnnp_dark[["midnight"]]),
-      axis.ticks        = element_line(linewidth = 0.15, color = cnnp_dark[["midnight"]]),
-      axis.ticks.length = unit(2, "pt"),
-      axis.text         = element_text(size = rel(1.0), color = cnnp_dark[["midnight"]]),
-      axis.title        = element_text(size = rel(1.15),  color = cnnp_dark[["midnight"]]),
-      # The whole plot is brand cream (data area + axis margins), so a panel reads
-      # as one solid card. The white *border* on plot.background does double duty:
-      # on a single figure it's an invisible frame on the white page; in a patchwork
-      # it forms the white gutter between panels (panels sit flush, so each panel's
-      # border contributes half the gap). plot.margin keeps content clear of it.
-      panel.background  = element_rect(fill = cnnp_light[["cream"]], color = NA),
-      plot.background   = element_rect(fill = cnnp_light[["cream"]], color = "white",
-                                       linewidth = gutter),
-      plot.margin       = margin(gutter + 1, gutter + 1, gutter + 1, gutter + 1, "pt"),
-      panel.grid        = element_blank(),
-      legend.background = element_rect(fill = cnnp_light[["cream"]], color = NA),
-      legend.key        = element_rect(fill = cnnp_light[["cream"]], color = NA),
-      legend.text       = element_text(size = rel(1.0), color = cnnp_dark[["midnight"]]),
-      legend.title      = element_text(size = rel(1.15), face = "plain", color = cnnp_dark[["midnight"]]),
-      # facet strips: no grey box; label colour matches the axis chrome. Per-plot
-      # layout (angle/justification) is left to the figure (see plot_beta_forest).
-      strip.background  = element_blank(),
-      strip.text        = element_text(size = rel(1.0), color = cnnp_dark[["midnight"]]),
-      # bold, matching the plot.tag (panel letter) weight so titles and tags read
-      # as one typographic level. Supertitles use plot.title too, so they inherit it.
-      plot.title        = element_text(size = rel(1.15), face = "bold",
-                                       hjust = 0, color = cnnp_dark[["midnight"]]),
-      plot.subtitle     = element_text(size = rel(1.0), hjust = 0, color = cnnp_dark[["midnight"]]),
-      # captions: same midnight chrome, right-aligned and a touch smaller.
-      plot.caption      = element_text(size = rel(0.9), hjust = 1, color = cnnp_dark[["midnight"]]),
-      plot.tag          = element_text(face = "bold", size = rel(1.15), color = cnnp_dark[["midnight"]]),
-      plot.tag.position = "topleft"
-    )
-}
-
-# ── Okabe-Ito palette (colour-blind and greyscale safe) ───────────────────────
-# Reference: Okabe & Ito (2008), jfly.iam.u-tokyo.ac.jp/color/
-
-cnnp_okabe_ito <- c(
-  orange       = "#E69F00",
-  sky_blue     = "#56B4E9",
-  green        = "#009E73",
-  yellow       = "#F0E442",
-  blue         = "#0072B2",#very close to lab brand blue, use with care!
-  vermillion   = "#D55E00",
-  pink         = "#CC79A7",
-  black        = "#111111"
+# Structural/non-data colours. Use for axes, labels, gridlines, backgrounds.
+# See usage guidelines above.
+cnnp_neutral <- c(
+  cream    = "#fffdef",  # plot background only
+  midnight = "#223344",  # axes, ticks, labels, text
+  bluegrey = "#66808e",  # secondary gridlines, structural non-data elements
+  brown    = "#3d2307"   # brand stand-in for midnight; never carries data meaning
 )
 
-# Structural greys — ordered faint to dark (do not use for science categories).
-# For backgrounds, gridlines, reference lines, secondary data marks.
+# Brand plot colour pairs. Each pair: dark = primary/foreground,
+# light = secondary/background. Priority: teal > mustard > purple.
+# See usage guidelines above.
+cnnp_pairs <- list(
+  teal    = c(dark = "#005d76",  light = "#9dc2cc"),
+  mustard = c(dark = "#8a6408",  light = "#d4a017"),
+  purple  = c(dark = "#6A51A3",  light = "#c9b8e8")
+)
+
+# Okabe-Ito palette (colour-blind and greyscale safe).
+# Reference: Okabe & Ito (2008), jfly.iam.u-tokyo.ac.jp/color/
+# See usage guidelines above for rules on mixing with cnnp_pairs.
+cnnp_okabe_ito <- c(
+  orange     = "#E69F00",
+  sky_blue   = "#56B4E9",  # last resort — close to brand teal
+  green      = "#009E73",
+  yellow     = "#F0E442",
+  blue       = "#0072B2",  # last resort — close to brand teal
+  vermillion = "#D55E00",
+  pink       = "#CC79A7",
+  black      = "#111111"   # last resort — close to midnight
+)
+
+# Structural greys — pure neutral ramp, no brand hue, ordered faint to dark.
+# For geom defaults: reference lines, confidence ribbons, NA fills.
+# Distinct from cnnp_neutral (which carries brand identity).
+# Do not use for science categories.
 cnnp_greys <- c(
   faint    = "#F0F0F0",
   light    = "#E8E8E8",
@@ -93,29 +130,6 @@ cnnp_greys <- c(
   charcoal = "#4D4D4D"
 )
 
-# Reserved colour-blind-safe purple, outside the Okabe-Ito 8. Use as a 9th
-# categorical hue, or — as a dark/light pair — for a secondary two-level axis
-# orthogonal to the main palette (in this paper, trait vs state). Distinguishable
-# from the Okabe-Ito hues by colour, and from itself by lightness.
-cnnp_purple <- c(
-  dark  = "#6A51A3",
-  light = "#BCBDDC"
-)
-
-# Brand colours: light and dark pairs of cream + teal.
-cnnp_light <- c(
-  cream = "#fffdef",   # panel background, soft branded fills
-  teal  = "#9dc2cc",   # soft teal — secondary branded marks/outlines
-  bluegrey = "#66808e"    # blue-grey — can be matched with midnight for a secondary dark/medium pair
-)
-
-cnnp_dark <- c(
-  brown = "#3d2307",   # brand brown
-  mustard = "#f7b51f", # mustard 
-  teal = "#005d76",    # teal
-  midnight = "#223344"    # midnight — axis lines, ticks, text
-)
-
 # NOTE: this file holds only the reusable CNNP foundation (brand) — typography,
 # the colour-blind-safe primitives above, scale machinery, and export helpers.
 # It is intentionally domain-agnostic so every lab paper can source it unchanged.
@@ -123,6 +137,48 @@ cnnp_dark <- c(
 # Paper-specific *semantic* palettes (e.g. "physical activity is always orange")
 # belong in that project's own config, NOT here. Define a named colour vector in
 # the project and pass it to scale_*_cnnp(). See R/config.R for this paper's.
+
+# ── Theme ─────────────────────────────────────────────────────────────────────
+
+# gutter (in pt) is the white separation drawn between panels in a multi-panel
+# (patchwork) figure — see the plot.background note below. Tune per project.
+theme_cnnp <- function(base_size = 8, base_family = CNNP_FONT, gutter = 1) {
+  theme_classic(base_size = base_size, base_family = base_family) %+replace%
+    theme(
+      axis.line         = element_line(linewidth = 0.25, color = cnnp_neutral[["midnight"]]),
+      axis.ticks        = element_line(linewidth = 0.15, color = cnnp_neutral[["midnight"]]),
+      axis.ticks.length = unit(2, "pt"),
+      axis.text         = element_text(size = rel(1.0), color = cnnp_neutral[["midnight"]]),
+      axis.title        = element_text(size = rel(1.15),  color = cnnp_neutral[["midnight"]]),
+      # The whole plot is brand cream (data area + axis margins), so a panel reads
+      # as one solid card. The white *border* on plot.background does double duty:
+      # on a single figure it's an invisible frame on the white page; in a patchwork
+      # it forms the white gutter between panels (panels sit flush, so each panel's
+      # border contributes half the gap). plot.margin keeps content clear of it.
+      panel.background  = element_rect(fill = cnnp_neutral[["cream"]], color = NA),
+      plot.background   = element_rect(fill = cnnp_neutral[["cream"]], color = "white",
+                                       linewidth = gutter),
+      plot.margin       = margin(gutter + 1, gutter + 1, gutter + 1, gutter + 1, "pt"),
+      panel.grid        = element_blank(),
+      legend.background = element_rect(fill = cnnp_neutral[["cream"]], color = NA),
+      legend.key        = element_rect(fill = cnnp_neutral[["cream"]], color = NA),
+      legend.text       = element_text(size = rel(1.0), color = cnnp_neutral[["midnight"]]),
+      legend.title      = element_text(size = rel(1.15), face = "plain", color = cnnp_neutral[["midnight"]]),
+      # facet strips: no grey box; label colour matches the axis chrome. Per-plot
+      # layout (angle/justification) is left to the figure (see plot_beta_forest).
+      strip.background  = element_blank(),
+      strip.text        = element_text(size = rel(1.0), color = cnnp_neutral[["midnight"]]),
+      # bold, matching the plot.tag (panel letter) weight so titles and tags read
+      # as one typographic level. Supertitles use plot.title too, so they inherit it.
+      plot.title        = element_text(size = rel(1.15), face = "bold",
+                                       hjust = 0, color = cnnp_neutral[["midnight"]]),
+      plot.subtitle     = element_text(size = rel(1.0), hjust = 0, color = cnnp_neutral[["midnight"]]),
+      # captions: same midnight chrome, right-aligned and a touch smaller.
+      plot.caption      = element_text(size = rel(0.9), hjust = 1, color = cnnp_neutral[["midnight"]]),
+      plot.tag          = element_text(face = "bold", size = rel(1.15), color = cnnp_neutral[["midnight"]]),
+      plot.tag.position = "topleft"
+    )
+}
 
 # ── Discrete scales ───────────────────────────────────────────────────────────
 # Automatic case: "give me N colour-blind-safe colours" — Okabe-Ito in order.
@@ -153,30 +209,33 @@ scale_fill_cnnp   <- function(palette, ...) scale_fill_manual(values = palette, 
 # reads as "no data", distinct from any hue in the data ramps.
 CNNP_NA_COLOUR <- unname(cnnp_greys["light"])
 
-# Sequential gradient (e.g. a single-variable heatmap). Low end is white — not the
-# cream panel tint — so low values never blend into a tinted panel background.
-# direction = 1 → white (low) to teal (high); -1 reverses.
+# ── Continuous scales ─────────────────────────────────────────────────────────
+
+# Sequential gradient (e.g. a single-variable heatmap). Low end is white — not
+# the cream panel tint — so low values never blend into the panel background.
+# This is intentional; do not change to cream. direction = 1: white (low) to
+# dark teal (high); direction = -1 reverses.
 scale_fill_gradient_cnnp <- function(direction = 1, na.value = CNNP_NA_COLOUR, ...) {
-  ends <- c("white", unname(cnnp_dark["teal"]))   # low → high
+  ends <- c("white", unname(cnnp_pairs$teal["dark"]))
   if (direction != 1) ends <- rev(ends)
   scale_fill_gradient(low = ends[[1]], high = ends[[2]], na.value = na.value, ...)
 }
 
 scale_colour_gradient_cnnp <- function(direction = 1, na.value = CNNP_NA_COLOUR, ...) {
-  ends <- c("white", unname(cnnp_dark["teal"]))
+  ends <- c("white", unname(cnnp_pairs$teal["dark"]))
   if (direction != 1) ends <- rev(ends)
   scale_colour_gradient(low = ends[[1]], high = ends[[2]], na.value = na.value, ...)
 }
 
 # Brand sequential ramp for wide-range continuous data, where the single-hue
-# white→teal scale above loses resolution at the top end. Three brand stops:
-# white → light teal → dark teal. The middle stop is placed at 0.374 (not 0.5)
+# white->teal scale above loses resolution at the top end. Three brand stops:
+# white -> light teal -> dark teal. The middle stop is placed at 0.374 (not 0.5)
 # because that is its CIE-L* fraction between white (L*=100) and dark teal
-# (L*=36) — so perceived lightness drops *evenly* across the whole scale (both
-# segments slope ≈ -64 L* per unit) instead of plateauing near the light end.
-# Even lightness ⇒ greyscale-safe and colour-blind-safe. Low end is white (not
-# the cream panel tint) so low values never blend in. direction = -1 reverses.
-cnnp_seq_cols   <- c("white", unname(cnnp_light["teal"]), unname(cnnp_dark["teal"]))
+# (L*=36) — so perceived lightness drops evenly across the whole scale (both
+# segments slope ~-64 L* per unit) instead of plateauing near the light end.
+# Even lightness => greyscale-safe and colour-blind-safe. Low end is white (not
+# cream) so low values never blend in. direction = -1 reverses.
+cnnp_seq_cols   <- c("white", unname(cnnp_pairs$teal["light"]), unname(cnnp_pairs$teal["dark"]))
 cnnp_seq_values <- c(0, 0.374, 1)
 
 scale_fill_seq_cnnp <- function(direction = 1, na.value = CNNP_NA_COLOUR, ...) {
@@ -192,12 +251,16 @@ scale_colour_seq_cnnp <- function(direction = 1, na.value = CNNP_NA_COLOUR, ...)
 }
 
 # Diverging gradient centred on midpoint (e.g. Pearson r, z-score).
-# Negative → vermillion, zero → white (fades out), positive → CNNP teal.
+# Negative -> vermillion, zero -> white (fades out), positive -> dark teal.
+# WARNING: vermillion is an Okabe-Ito colour. If this figure also uses Okabe-Ito
+# categorical colours, no category may be assigned vermillion — it will clash
+# with the negative pole of this scale. Plan category colour assignments
+# accordingly before using this scale.
 scale_colour_gradient2_cnnp <- function(midpoint = 0, na.value = CNNP_NA_COLOUR, ...) {
   scale_colour_gradient2(
     low      = unname(cnnp_okabe_ito["vermillion"]),
     mid      = "white",
-    high     = unname(cnnp_dark["teal"]),
+    high     = unname(cnnp_pairs$teal["dark"]),
     midpoint = midpoint,
     na.value = na.value,
     ...
@@ -208,17 +271,17 @@ scale_fill_gradient2_cnnp <- function(midpoint = 0, na.value = CNNP_NA_COLOUR, .
   scale_fill_gradient2(
     low      = unname(cnnp_okabe_ito["vermillion"]),
     mid      = "white",
-    high     = unname(cnnp_dark["teal"]),
+    high     = unname(cnnp_pairs$teal["dark"]),
     midpoint = midpoint,
     na.value = na.value,
     ...
   )
 }
 
-# ── Shape scale + redundant colour↔shape coding ───────────────────────────────
+# ── Shape scale + redundant colour/shape coding ───────────────────────────────
 # Colour alone fails in greyscale/B&W print and photocopies. Redundantly encoding
 # a category as BOTH colour and shape keeps it decodable. Shapes chosen to stay
-# distinct at small print sizes: circle, triangle, square, diamond, plus, star…
+# distinct at small print sizes: circle, triangle, square, diamond, plus, star...
 cnnp_shapes <- c(16, 17, 15, 18, 3, 8, 7, 4)
 
 cnnp_shape_pal <- function() {
@@ -302,9 +365,9 @@ cnnp_annotation_theme <- function(...) {
 # final width so theme_cnnp()'s point sizes print at their nominal pt values.
 
 cnnp_widths <- c(
-  single  = 90,    # single column
-  onehalf = 140,   # 1.5 columns
-  double  = 190    # full page width
+  single  = 90,    # single column in mm
+  onehalf = 140,   # 1.5 columns in mm
+  double  = 190    # full page width in mm
 )
 
 # The base-14 PDF font only covers Latin-1, so non-Latin-1 glyphs (em/en dashes,
@@ -316,10 +379,10 @@ cnnp_widths <- c(
 # PDF. (Middot "·" is in Latin-1 and renders fine, so it is left untouched.)
 cnnp_ascii <- function(x) {
   if (!is.character(x)) return(x)
-  repl <- c("—" = "-", "–" = "-", "−" = "-",   # em / en / minus dash
-            "‘" = "'", "’" = "'",                     # smart single quotes
-            "“" = '"', "”" = '"',                     # smart double quotes
-            "…" = "...")                                    # ellipsis
+  repl <- c("\u2014" = "-", "\u2013" = "-", "\u2212" = "-",  # em / en / minus dash
+            "\u2018" = "'", "\u2019" = "'",                   # smart single quotes
+            "\u201c" = '"', "\u201d" = '"',                   # smart double quotes
+            "\u2026" = "...")                                  # ellipsis
   for (from in names(repl)) x <- gsub(from, repl[[from]], x, fixed = TRUE)
   x
 }
@@ -375,24 +438,27 @@ ggsave_cnnp <- function(plot, filename, out_dir = ".",
 # source of truth: the geom_text/geom_label defaults below reference them, and
 # annotate() calls (which bypass geom defaults) reference them directly. Colour
 # matches the axis chrome so labels and axes stay in lockstep.
-CNNP_LABEL_COLOUR <- unname(cnnp_dark["midnight"])
-CNNP_LABEL_SIZE   <- 2.82   # 8 pt 
+CNNP_LABEL_COLOUR <- unname(cnnp_neutral["midnight"])
+CNNP_LABEL_SIZE   <- 2.82   # 8 pt
 
 # ── Geom defaults ─────────────────────────────────────────────────────────────
 # Call once per session after sourcing this file to give every geom a neutral
-# default look (structural greys). Mapped/explicit aesthetics always override
-# these. Opt-in — not called on source.
+# default look (brand teal for data geoms, structural grey for reference geoms).
+# Mapped/explicit aesthetics always override these.
+# NOTE: call this before any project-specific geom overrides — it will silently
+# overwrite anything set before it.
+# Opt-in — not called on source.
 
 cnnp_set_geom_defaults <- function() {
-  update_geom_defaults("bar",     list(fill = unname(cnnp_light["teal"]), colour = "white", linewidth = 0.2))
-  update_geom_defaults("col",     list(fill = unname(cnnp_light["teal"]), colour = "white", linewidth = 0.2))
+  update_geom_defaults("bar",     list(fill = unname(cnnp_pairs$teal["light"]), colour = "white", linewidth = 0.2))
+  update_geom_defaults("col",     list(fill = unname(cnnp_pairs$teal["light"]), colour = "white", linewidth = 0.2))
   # boxplot: dark outline (not white) so whiskers/staples stay visible where they
   # cross the cream panel; the teal fill still reads as the box body.
-  update_geom_defaults("boxplot", list(fill = unname(cnnp_light["teal"]), colour = unname(cnnp_dark["midnight"]), linewidth = 0.25))
-  update_geom_defaults("point",      list(colour = unname(cnnp_dark["teal"]), size = 1.2))
-  update_geom_defaults("line",       list(colour = unname(cnnp_dark["teal"]), linewidth = 0.5))
+  update_geom_defaults("boxplot", list(fill = unname(cnnp_pairs$teal["light"]), colour = unname(cnnp_neutral["midnight"]), linewidth = 0.25))
+  update_geom_defaults("point",      list(colour = unname(cnnp_pairs$teal["dark"]), size = 1.2))
+  update_geom_defaults("line",       list(colour = unname(cnnp_pairs$teal["dark"]), linewidth = 0.5))
   # smooth: branded line over a faint grey confidence ribbon (was default grey60).
-  update_geom_defaults("smooth",     list(colour = unname(cnnp_dark["teal"]), fill = unname(cnnp_greys["silver"]), linewidth = 0.5))
+  update_geom_defaults("smooth",     list(colour = unname(cnnp_pairs$teal["dark"]), fill = unname(cnnp_greys["silver"]), linewidth = 0.5))
   # reference lines default to a structural grey so they recede behind the data.
   update_geom_defaults("hline",   list(colour = unname(cnnp_greys["dark"]), linewidth = 0.25))
   update_geom_defaults("vline",   list(colour = unname(cnnp_greys["dark"]), linewidth = 0.25))
@@ -400,19 +466,19 @@ cnnp_set_geom_defaults <- function() {
   update_geom_defaults("segment", list(colour = unname(cnnp_greys["dark"]), linewidth = 0.25))
   # distributions and filled areas: teal body, with the same dark/white framing
   # logic as the bars and boxes above.
-  update_geom_defaults("violin",    list(fill = unname(cnnp_light["teal"]), colour = unname(cnnp_dark["midnight"]), linewidth = 0.25))
-  update_geom_defaults("histogram", list(fill = unname(cnnp_light["teal"]), colour = "white", linewidth = 0.2))
-  update_geom_defaults("area",      list(fill = unname(cnnp_light["teal"]), colour = NA))
+  update_geom_defaults("violin",    list(fill = unname(cnnp_pairs$teal["light"]), colour = unname(cnnp_neutral["midnight"]), linewidth = 0.25))
+  update_geom_defaults("histogram", list(fill = unname(cnnp_pairs$teal["light"]), colour = "white", linewidth = 0.2))
+  update_geom_defaults("area",      list(fill = unname(cnnp_pairs$teal["light"]), colour = NA))
   update_geom_defaults("ribbon",    list(fill = unname(cnnp_greys["silver"]), colour = NA))
-  update_geom_defaults("density",   list(fill = NA, colour = unname(cnnp_dark["teal"]), linewidth = 0.5))
-  update_geom_defaults("freqpoly",  list(colour = unname(cnnp_dark["teal"]), linewidth = 0.5))
-  update_geom_defaults("step",      list(colour = unname(cnnp_dark["teal"]), linewidth = 0.5))
-  update_geom_defaults("rug",       list(colour = unname(cnnp_dark["teal"]), linewidth = 0.3))
-  update_geom_defaults("tile",      list(fill = unname(cnnp_light["teal"]), colour = NA))
-  update_geom_defaults("errorbar",   list(colour = unname(cnnp_dark["teal"]), linewidth = 0.4))
-  update_geom_defaults("linerange",  list(colour = unname(cnnp_dark["teal"]), linewidth = 0.4))
-  update_geom_defaults("pointrange", list(colour = unname(cnnp_dark["teal"]), linewidth = 0.4))
-  update_geom_defaults("crossbar",   list(colour = unname(cnnp_dark["teal"]), linewidth = 0.4))
+  update_geom_defaults("density",   list(fill = NA, colour = unname(cnnp_pairs$teal["dark"]), linewidth = 0.5))
+  update_geom_defaults("freqpoly",  list(colour = unname(cnnp_pairs$teal["dark"]), linewidth = 0.5))
+  update_geom_defaults("step",      list(colour = unname(cnnp_pairs$teal["dark"]), linewidth = 0.5))
+  update_geom_defaults("rug",       list(colour = unname(cnnp_pairs$teal["dark"]), linewidth = 0.3))
+  update_geom_defaults("tile",      list(fill = unname(cnnp_pairs$teal["light"]), colour = NA))
+  update_geom_defaults("errorbar",   list(colour = unname(cnnp_pairs$teal["dark"]), linewidth = 0.4))
+  update_geom_defaults("linerange",  list(colour = unname(cnnp_pairs$teal["dark"]), linewidth = 0.4))
+  update_geom_defaults("pointrange", list(colour = unname(cnnp_pairs$teal["dark"]), linewidth = 0.4))
+  update_geom_defaults("crossbar",   list(colour = unname(cnnp_pairs$teal["dark"]), linewidth = 0.4))
   update_geom_defaults("text",       list(colour = CNNP_LABEL_COLOUR, size = CNNP_LABEL_SIZE))
   update_geom_defaults("label",      list(colour = CNNP_LABEL_COLOUR, size = CNNP_LABEL_SIZE))
 }
