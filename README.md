@@ -1,14 +1,35 @@
-# CNNP lab ggplot2 theme
+# CNNP lab figure theme
 
-A single-file, brand-consistent **ggplot2** theme + colour system for CNNP lab
-figures. It is intentionally *domain-agnostic* — typography, colour-blind-safe
-palettes, scale helpers, and export tooling that every lab paper can reuse
-unchanged. Paper-specific *semantic* palettes (e.g. "physical activity is always
-orange") belong in that project's own config, **not** in this file.
+A brand-consistent figure theme + colour system for CNNP lab figures. It is
+intentionally *domain-agnostic* — typography, colour-blind-safe palettes, scale
+helpers, and export tooling that every lab paper can reuse unchanged.
+Paper-specific *semantic* palettes (e.g. "physical activity is always orange")
+belong in that project's own config, **not** here.
 
-Everything lives in [`theme_cnnp.R`](theme_cnnp.R). A runnable gallery that
-exercises the whole API is in [`test_theme_cnnp.R`](test_theme_cnnp.R) — when in
-doubt, copy a pattern from there.
+## Architecture: tokens + per-language adapters
+
+All design values live in one language-neutral file,
+[`cnnp_tokens.json`](cnnp_tokens.json) — colours, palettes, font/stroke/marker
+sizes, scale recipes. Each language has a thin **adapter** that reads those
+tokens and wires them into its own plotting API:
+
+| File | Role |
+|---|---|
+| [`cnnp_tokens.json`](cnnp_tokens.json) | **Source of truth** — edit colours/sizes/palettes here |
+| [`GUIDELINES.md`](GUIDELINES.md) | Human-facing usage rules (applies to every language) |
+| [`theme_cnnp.R`](theme_cnnp.R) | R / ggplot2 adapter |
+| _(planned)_ | MATLAB adapter |
+| _(planned)_ | Python / matplotlib adapter |
+
+**Edit design values in the token file, not in an adapter.** Units are physical
+and language-neutral: colours as hex, font/stroke/marker sizes in **points**,
+figure widths in **mm**, the type scale as unitless ratios (the R adapter
+converts pt → ggplot's mm units internally). See [`GUIDELINES.md`](GUIDELINES.md)
+for the colour-usage rules and the unit convention.
+
+A runnable gallery that exercises the whole R API is in
+[`test_theme_cnnp.R`](test_theme_cnnp.R) — when in doubt, copy a pattern from
+there.
 
 ---
 
@@ -32,9 +53,10 @@ Rscript test_theme_cnnp.R         # writes PDFs + TIFFs to ./test_out/
 ```
 
 ### Requirements
-- R with **ggplot2** (≥ 4.x). Optional: **systemfonts** (font resolution),
-  **ragg** (TIFF/PNG), **patchwork** (multi-panel + guide collection),
-  **scales** (date breaks — usually already present via ggplot2).
+- R with **ggplot2** (≥ 4.x) and **jsonlite** (reads `cnnp_tokens.json`).
+  Optional: **systemfonts** (font resolution), **ragg** (TIFF/PNG),
+  **patchwork** (multi-panel + guide collection), **scales** (date breaks —
+  usually already present via ggplot2).
 
 ---
 
@@ -61,8 +83,9 @@ theme_cnnp(base_size = 8, base_family = CNNP_FONT, gutter = 3)
 ## Colour
 
 The colour system splits cleanly into **structural** colours (never carry data
-meaning) and **data** colours. The full rules live in a usage-guidelines block at
-the top of [`theme_cnnp.R`](theme_cnnp.R); the exported objects are:
+meaning) and **data** colours. The full rules live in
+[`GUIDELINES.md`](GUIDELINES.md); the R objects (built from `cnnp_tokens.json`)
+are:
 
 | Object | Kind | Use |
 |---|---|---|
@@ -76,7 +99,7 @@ cnnp_neutral[["midnight"]]    # "#223344"  (structural chrome)
 cnnp_pairs$teal[["dark"]]     # "#005d76"  (a brand data colour)
 ```
 
-A few rules worth knowing (see the file header for the rest): don't mix
+A few rules worth knowing (see [`GUIDELINES.md`](GUIDELINES.md) for the rest): don't mix
 `cnnp_pairs` with Okabe-Ito hues in the same panel; only `midnight`/`cream` from
 `cnnp_neutral` should appear alongside Okabe-Ito; and `cnnp_okabe_ito` is fully
 colour-blind-safe whereas `cnnp_pairs` is not guaranteed to be.
