@@ -1,0 +1,25 @@
+[project]
+name = "cnnp-theme"
+version = "0.1.0"
+description = "CNNP lab publication-figure theme for matplotlib (shares cnnp_tokens.json with the R and MATLAB adapters)"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "matplotlib>=3.7",
+    "numpy>=1.23",
+]
+
+[project.optional-dependencies]
+# seaborn is NOT required: the theme is rcParams-based and applies to plain
+# matplotlib. Install this extra only if you also want seaborn integration:
+#   uv sync --extra seaborn
+seaborn = ["seaborn>=0.12"]
+
+[tool.uv]
+# Application-style project: don't build/install cnnp_theme as a wheel; it is
+# imported directly from this folder (run scripts with `uv run`). Drop this line
+# and add a build backend if you later want `pip install cnnp-theme`.
+package = false
+
+[dependency-groups]
+dev = ["seaborn>=0.12"]
