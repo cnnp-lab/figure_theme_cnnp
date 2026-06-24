@@ -1,3 +1,3 @@
-test_out/
+# test_out/ PDFs are tracked (reference gallery); rasters are ignored.
 out/
 *.png

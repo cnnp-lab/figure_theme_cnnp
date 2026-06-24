@@ -1,5 +1,9 @@
-# Generated figure output from test_theme_cnnp.R
-test_out/
+# Generated raster figure output (regenerable). Vector PDFs in test_out/ ARE
+# tracked, as a reference gallery / cross-language sizing check.
+*.tiff
+*.tif
+**/test_out/*.png
+**/test_out/*.jpg
 
 # Claude Code local settings (machine-specific)
 .claude/settings.local.json

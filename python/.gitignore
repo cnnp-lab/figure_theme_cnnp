@@ -1,4 +1,4 @@
 .venv/
-test_out/
+# test_out/ PDFs are tracked (reference gallery); rasters ignored via root .gitignore.
 __pycache__/
 *.pyc
