@@ -25,7 +25,7 @@ it (and a good template for lab analysis repos):
 cd python
 uv sync                      # matplotlib + numpy
 uv sync --extra seaborn      # + seaborn, if you want the seaborn path
-uv run python test_theme_cnnp.py     # writes python/test_out/*.png
+uv run python test_theme_cnnp.py     # writes python/test_out/*.pdf + *.png
 ```
 
 ## Quick start
@@ -85,9 +85,25 @@ the R look. No extra call is needed for subplots.
 matplotlib is points-native, so token pt sizes apply directly — only the R
 adapter converts pt → mm.
 
+## Fonts
+
+The theme targets **Helvetica** (then Arial, then DejaVu Sans), set in
+`font.sans-serif`. On **macOS** Helvetica is a system font and matplotlib uses it
+automatically — no setup. If you just installed it and matplotlib still falls
+back, clear its cache so it re-scans: `rm -rf ~/.cache/matplotlib`.
+
+On **Linux/Windows** without Helvetica, either install it (or a metric-compatible
+free substitute such as **TeX Gyre Heros** / **Nimbus Sans**) system-wide, or
+register a font file at runtime, then clear the cache:
+
+```python
+import matplotlib.font_manager as fm
+fm.fontManager.addfont("/path/to/Helvetica.ttf")   # then rm -rf ~/.cache/matplotlib
+```
+
+With none present it falls back to DejaVu Sans (the layout is otherwise identical).
+
 ## Notes / gotchas
-- Helvetica/Arial fall back to DejaVu Sans if the system lacks them (set in
-  `font.sans-serif`); the look is otherwise identical.
 - The continuous colormaps are interpolated in **CIE-Lab** (pure numpy, no
   `colour-science` dependency) to match ggplot2's `colour_ramp` and the MATLAB
   adapter, rather than matplotlib's default RGB interpolation.

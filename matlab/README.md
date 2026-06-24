@@ -42,8 +42,20 @@ but not on the path when you run the gallery, set `GRAMM_DIR` at the top of
 
 ```matlab
 cd matlab
-test_theme_cnnp   % writes matlab/test_out/*.png  (6-figure gallery)
+test_theme_cnnp   % writes matlab/test_out/*.pdf + *.png  (6-figure gallery)
 ```
+
+`cnnp_export` saves at the true physical journal width (single 90 mm / onehalf
+140 / double 190), so a PDF has an exact size — single = 255 pt — identical to
+the R adapter's PDFs.
+
+## Fonts
+
+The theme uses **Helvetica** (`typography.font_prefer`). MATLAB renders with
+system-installed fonts, so on **macOS** Helvetica works out of the box — check
+with `any(strcmp(listfonts, 'Helvetica'))`. On a machine without it, install
+Helvetica (or a metric-compatible substitute) system-wide and restart MATLAB; if
+absent, MATLAB falls back to its default sans.
 
 Typical use in lab code:
 
