@@ -22,13 +22,11 @@ Usage rules: [`../GUIDELINES.md`](../GUIDELINES.md).
 | `cnnp_export.m` | export at a journal width (mirrors `ggsave_cnnp`); ASCII-folds the filename |
 | `cnnp_ascii.m` | fold non-ASCII typography to ASCII (mirrors R `cnnp_ascii`) |
 | `cnnp_set_session_defaults.m` / `cnnp_reset_defaults.m` | apply / undo session-wide `groot` defaults |
-| `cnnp_poc.m` | one-figure proof-of-concept |
 | `test_theme_cnnp.m` | the full gallery (run this) |
 
 ```matlab
 cd matlab
 test_theme_cnnp   % writes matlab/test_out/*.png  (6-figure gallery)
-cnnp_poc          % writes matlab/poc_out/cnnp_poc.png  (single POC)
 ```
 
 Typical use in lab code:
