@@ -97,6 +97,12 @@ def cnnp_rc(tokens: Tokens | None = None) -> dict:
         "figure.constrained_layout.use": True,
         "savefig.dpi": tok.dpi,
         "figure.dpi": 100,
+
+        # embed real (TrueType) fonts in PDF/PS instead of matplotlib's default
+        # Type 3 — Type 3 glyphs import into Illustrator as individual paths, so
+        # text isn't editable. fonttype 42 keeps text selectable and editable.
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
     }
 
 
