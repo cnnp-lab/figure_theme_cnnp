@@ -18,8 +18,8 @@ tokens and wires them into its own plotting API:
 | [`cnnp_tokens.json`](cnnp_tokens.json) | **Source of truth** — edit colours/sizes/palettes here |
 | [`GUIDELINES.md`](GUIDELINES.md) | Human-facing usage rules (applies to every language) |
 | [`theme_cnnp.R`](theme_cnnp.R) | R / ggplot2 adapter |
-| _(planned)_ | MATLAB adapter |
-| _(planned)_ | Python / matplotlib adapter |
+| [`matlab/`](matlab/) | MATLAB adapter (on [gramm](https://github.com/piermorel/gramm)) |
+| [`python/`](python/) | Python / matplotlib adapter (uv project; seaborn-compatible) |
 
 **Edit design values in the token file, not in an adapter.** Units are physical
 and language-neutral: colours as hex, font/stroke/marker sizes in **points**,
