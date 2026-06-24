@@ -13,9 +13,25 @@ library(ggplot2)
 
 # ── Token loading ─────────────────────────────────────────────────────────────
 # Locate cnnp_tokens.json (override with options(cnnp.tokens=) or env CNNP_TOKENS;
-# otherwise look next to this script, then in the working directory) and parse it.
+# otherwise walk UP from this script's folder, then from the working directory,
+# until the token file is found) and parse it. The walk-up lets this adapter live
+# in r/ while the shared token file sits at the repo root, alongside matlab/ and
+# python/.
 if (!requireNamespace("jsonlite", quietly = TRUE))
   stop("theme_cnnp.R needs the 'jsonlite' package to read cnnp_tokens.json.")
+
+# Walk up from `start` to the filesystem root, returning the first directory that
+# contains cnnp_tokens.json (or NULL).
+.cnnp_find_up <- function(start) {
+  d <- normalizePath(start, mustWork = FALSE)
+  repeat {
+    p <- file.path(d, "cnnp_tokens.json")
+    if (file.exists(p)) return(p)
+    parent <- dirname(d)
+    if (identical(parent, d)) return(NULL)           # reached the root
+    d <- parent
+  }
+}
 
 .cnnp_tokens_path <- function() {
   cand <- c(getOption("cnnp.tokens", ""), Sys.getenv("CNNP_TOKENS", ""))
@@ -23,13 +39,14 @@ if (!requireNamespace("jsonlite", quietly = TRUE))
   for (i in seq_len(sys.nframe())) {                 # works when source()-d
     of <- sys.frame(i)$ofile
     if (!is.null(of)) {
-      p <- file.path(dirname(normalizePath(of)), "cnnp_tokens.json")
-      if (file.exists(p)) return(p)
+      hit <- .cnnp_find_up(dirname(normalizePath(of)))
+      if (!is.null(hit)) return(hit)
     }
   }
-  if (file.exists("cnnp_tokens.json")) return("cnnp_tokens.json")
+  hit <- .cnnp_find_up(getwd())
+  if (!is.null(hit)) return(hit)
   stop("cnnp_tokens.json not found. Set options(cnnp.tokens = <path>), env ",
-       "CNNP_TOKENS, or run from the repo directory.")
+       "CNNP_TOKENS, or run from within the repo.")
 }
 
 .cnnp_tok <- jsonlite::read_json(.cnnp_tokens_path(), simplifyVector = TRUE)
@@ -366,6 +383,13 @@ ggsave_cnnp <- function(plot, filename, out_dir = ".",
                         dpi = .cnnp_tok$export$dpi, formats = c("pdf", "tiff")) {
   if (is.character(width)) width <- unname(cnnp_widths[[width]])
   if (is.null(height)) height <- width * aspect
+
+  # TIFF/PNG route through ragg (ggplot2's default raster backend), referenced
+  # only as a device string above; require it explicitly so the dependency is
+  # visible to renv and fails loudly rather than mid-save.
+  if (any(formats %in% c("tiff", "png")) &&
+      !requireNamespace("ragg", quietly = TRUE))
+    stop("ggsave_cnnp(): the 'ragg' package is required for TIFF/PNG output.")
 
   for (fmt in formats) {
     path <- file.path(out_dir, paste0(filename, ".", fmt))

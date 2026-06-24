@@ -17,7 +17,7 @@ tokens and wires them into its own plotting API:
 |---|---|
 | [`cnnp_tokens.json`](cnnp_tokens.json) | **Source of truth** — edit colours/sizes/palettes here |
 | [`GUIDELINES.md`](GUIDELINES.md) | Human-facing usage rules (applies to every language) |
-| [`theme_cnnp.R`](theme_cnnp.R) | R / ggplot2 adapter |
+| [`r/theme_cnnp.R`](r/theme_cnnp.R) | R / ggplot2 adapter |
 | [`matlab/`](matlab/) | MATLAB adapter (on [gramm](https://github.com/piermorel/gramm)) |
 | [`python/`](python/) | Python / matplotlib adapter (uv project; seaborn-compatible) |
 
@@ -28,15 +28,23 @@ converts pt → ggplot's mm units internally). See [`GUIDELINES.md`](GUIDELINES.
 for the colour-usage rules and the unit convention.
 
 A runnable gallery that exercises the whole R API is in
-[`test_theme_cnnp.R`](test_theme_cnnp.R) — when in doubt, copy a pattern from
+[`r/test_theme_cnnp.R`](r/test_theme_cnnp.R) — when in doubt, copy a pattern from
 there.
 
 ---
 
 ## Quick start
 
+The R adapter lives in [`r/`](r/) and is an [renv](https://rstudio.github.io/renv/)
+project, so its package versions are locked. From a fresh checkout:
+
+```sh
+cd r
+Rscript -e 'renv::restore()'      # install the locked package versions (once)
+```
+
 ```r
-source("theme_cnnp.R")
+source("r/theme_cnnp.R")          # or just source("theme_cnnp.R") from r/
 library(ggplot2)
 
 cnnp_set_geom_defaults()          # optional: branded neutral look for every geom
@@ -49,14 +57,18 @@ ggplot(mtcars, aes(wt, mpg)) +
 To see all the pieces working together, render the gallery:
 
 ```sh
-Rscript test_theme_cnnp.R         # writes PDFs + TIFFs to ./test_out/
+cd r && Rscript test_theme_cnnp.R   # writes PDFs + TIFFs to r/test_out/
 ```
+
+(`r/.Rprofile` auto-activates renv, and `theme_cnnp.R` finds `cnnp_tokens.json`
+by walking up to the repo root — so it works from `r/` or the repo root.)
 
 ### Requirements
 - R with **ggplot2** (≥ 4.x) and **jsonlite** (reads `cnnp_tokens.json`).
   Optional: **systemfonts** (font resolution), **ragg** (TIFF/PNG),
   **patchwork** (multi-panel + guide collection), **scales** (date breaks —
-  usually already present via ggplot2).
+  usually already present via ggplot2). All versions are pinned in
+  [`r/renv.lock`](r/renv.lock); `renv::restore()` installs them.
 
 ---
 
@@ -270,7 +282,7 @@ title = cnnp_ascii("Gallery — double column")    # — becomes -
 
 ## Worked example
 
-[`test_theme_cnnp.R`](test_theme_cnnp.R) renders six figures across all three
+[`r/test_theme_cnnp.R`](r/test_theme_cnnp.R) renders six figures across all three
 widths and is the best reference for real usage:
 
 - **fig0** (double) — the colour system, visualised: a labelled swatch card of
