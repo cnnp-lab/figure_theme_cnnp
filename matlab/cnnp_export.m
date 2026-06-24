@@ -1,24 +1,29 @@
 function out_file = cnnp_export(g, T, name, out_dir, varargin)
 %CNNP_EXPORT  Export a drawn gramm figure at a journal width (mirrors ggsave_cnnp).
 %
-%   cnnp_export(g, T, NAME, OUT_DIR) writes OUT_DIR/NAME.png at single-column
-%   width (90 mm), 300 dpi, on a white background.
+%   cnnp_export(g, T, NAME, OUT_DIR) writes OUT_DIR/NAME.pdf and .png at
+%   single-column width (90 mm), 300 dpi.
 %
 %   Name-value:
-%     'width'   'single' (90 mm, default) | 'onehalf' (140) | 'double' (190),
-%               or a numeric width in mm
-%     'aspect'  height / width ratio (default 0.85)
-%     'format'  'png' (default) | 'pdf' | 'eps' | ... (gramm file_type)
+%     'width'    'single' (90 mm, default) | 'onehalf' (140) | 'double' (190),
+%                or a numeric width in mm
+%     'aspect'   height / width ratio (default 0.85)
+%     'formats'  cellstr of gramm file types, default {'pdf','png'}. 'pdf'/'eps'/
+%                'svg' are vector; 'png'/'jpg' raster.
 %
-%   Widths and dpi come from the shared tokens (export.widths_mm, export.dpi),
-%   so MATLAB figures come out at the same physical size as the R ones. NAME is
+%   Saved at the TRUE physical journal width so the theme's point sizes print
+%   correctly (widths/dpi from the tokens). A PDF therefore has an exact size —
+%   single = 90 mm = 255 pt — identical to the R adapter's PDFs. NAME is
 %   ASCII-folded for the filename. Call AFTER g.draw() (and cnnp_theme_axes).
 
     p = inputParser;
-    addParameter(p, 'width',  'single');
-    addParameter(p, 'aspect', 0.85);
-    addParameter(p, 'format', 'png');
+    addParameter(p, 'width',   'single');
+    addParameter(p, 'aspect',  0.85);
+    addParameter(p, 'formats', {'pdf', 'png'});
     parse(p, varargin{:});
+
+    formats = p.Results.formats;
+    if ischar(formats) || isstring(formats), formats = cellstr(formats); end
 
     if isnumeric(p.Results.width)
         width_mm = p.Results.width;
@@ -32,13 +37,15 @@ function out_file = cnnp_export(g, T, name, out_dir, varargin)
     if ~exist(out_dir, 'dir'), mkdir(out_dir); end
     fname = cnnp_ascii(name);
 
-    g.export('file_name',   fname, ...
-             'export_path', out_dir, ...
-             'file_type',   p.Results.format, ...
-             'width',       width_mm / 10, ...      % mm -> cm (gramm units)
-             'height',      height_mm / 10, ...
-             'units',       'centimeters', ...
-             'resolution',  T.dpi);
+    for k = 1:numel(formats)
+        g.export('file_name',   fname, ...
+                 'export_path', out_dir, ...
+                 'file_type',   formats{k}, ...
+                 'width',       width_mm / 10, ...   % mm -> cm (gramm units)
+                 'height',      height_mm / 10, ...
+                 'units',       'centimeters', ...
+                 'resolution',  T.dpi);
+    end
 
-    out_file = fullfile(out_dir, [fname '.' p.Results.format]);
+    out_file = fullfile(out_dir, [fname '.' formats{1}]);
 end

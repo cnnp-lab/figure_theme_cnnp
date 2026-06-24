@@ -164,17 +164,24 @@ def fig_size_inches(width: str | float, aspect: float = 0.85,
 
 def cnnp_savefig(fig, name: str, out_dir: str | os.PathLike,
                  width: str | float = "single", aspect: float = 0.85,
-                 fmt: str = "png", tokens: Tokens | None = None) -> Path:
+                 formats=("pdf", "png"), tokens: Tokens | None = None):
     """Size a figure to a journal width and save it (mirrors ggsave_cnnp).
 
-    Widths/dpi come from the tokens, so Python figures match the physical size of
-    the R and MATLAB ones. ``name`` is ASCII-folded for the filename.
+    Saved at the **true physical** journal width so the theme's point sizes print
+    correctly: single = 90 mm, onehalf = 140, double = 190 (from the tokens), at
+    300 dpi for raster formats. A PDF therefore has an exact MediaBox — e.g.
+    single = 255 pt (90 mm) — identical to the R adapter's PDFs.
+
+    ``formats`` is an iterable of extensions ('pdf' for vector, 'png'/'tiff' for
+    raster); pass a single string for one format. ``name`` is ASCII-folded for the
+    filename. Returns the written path(s).
     """
     tok = tokens or load_tokens()
+    if isinstance(formats, str):
+        formats = (formats,)
     fig.set_size_inches(*fig_size_inches(width, aspect, tok))
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    path = out / f"{cnnp_ascii(name)}.{fmt}"
 
     # R-style thin white frame: the whole figure is the cream card (single and
     # multi-panel alike — inter-facet gaps stay cream); a thin white border rings
@@ -185,6 +192,10 @@ def cnnp_savefig(fig, name: str, out_dir: str | os.PathLike,
                       edgecolor="white", linewidth=2 * tok.gutter_pt,
                       zorder=1000, clip_on=False)
     fig.add_artist(frame)
-    fig.savefig(path, dpi=tok.dpi, facecolor=fig.get_facecolor())
+    paths = []
+    for fmt in formats:
+        path = out / f"{cnnp_ascii(name)}.{fmt}"
+        fig.savefig(path, dpi=tok.dpi, facecolor=fig.get_facecolor())
+        paths.append(path)
     frame.remove()
-    return path
+    return paths[0] if len(paths) == 1 else paths

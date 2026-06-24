@@ -4,7 +4,7 @@ Renders a small set of figures at the journal widths via cnnp_savefig(), so it
 also exercises the export path. Uses only synthetic (seeded) data so it makes no
 assumptions about the lab's science and runs fully offline.
 
-Run:  uv run python test_theme_cnnp.py     ->  python/test_out/*.png
+Run:  uv run python test_theme_cnnp.py     ->  python/test_out/*.pdf + *.png
 """
 
 from __future__ import annotations

@@ -7,7 +7,7 @@
 %
 %   cd matlab; test_theme_cnnp
 %
-% Output: matlab/test_out/*.png
+% Output: matlab/test_out/*.pdf + *.png
 %
 % Requirements: MATLAB R2018b+ and gramm on the path
 % (https://github.com/piermorel/gramm).
