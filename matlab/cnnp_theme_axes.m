@@ -18,6 +18,7 @@ function cnnp_theme_axes(g, T)
     midnight = T.neutral.midnight;
     axlw     = T.line_weights_pt.thin;     % axis line width, points
     fontname = T.font_prefer{1};
+    ticklen  = T.tick_len_pt;              % tick length, points
 
     % ── data axes: the cream cards + midnight chrome ──
     axs = g(1).facet_axes_handles;
@@ -38,6 +39,10 @@ function cnnp_theme_axes(g, T)
             'Box',       'off', ...        % drop top/right -> L-shaped axes
             'XGrid',     'off', 'YGrid', 'off', ...
             'FontName',  fontname);
+        % MATLAB TickLength is a fraction of the longest axis dimension; convert
+        % the 2 pt token to that fraction so ticks are the same physical length
+        % as the R figures regardless of panel size.
+        set(ax, 'TickLength', [ticklen / axis_longest_pt(ax), 0]);
         % titles / axis labels share the midnight chrome
         trySetColor(ax.Title,  midnight);
         trySetColor(ax.XLabel, midnight);
@@ -54,4 +59,14 @@ end
 
 function trySetColor(h, c)
     if ~isempty(h) && ishghandle(h), set(h, 'Color', c); end
+end
+
+function L = axis_longest_pt(ax)
+%AXIS_LONGEST_PT  Longest axis dimension in points (for TickLength conversion).
+    old = get(ax, 'Units');
+    cleanup = onCleanup(@() set(ax, 'Units', old));
+    set(ax, 'Units', 'points');
+    pos = get(ax, 'Position');     % [x y w h] in points
+    L = max(pos(3), pos(4));
+    if ~(L > 0), L = 1; end        % guard against zero/empty during layout
 end

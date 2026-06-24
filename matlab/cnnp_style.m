@@ -34,6 +34,13 @@ function g = cnnp_style(g, T, varargin)
             g.set_color_options('map', T.pairs_rgb, ...
                 'n_color', numel(T.pair_names), 'n_lightness', 2, ...
                 'legend', 'separate');
+            % The pairs map rows are in priority order (teal, mustard, purple)
+            % x (dark, light). gramm otherwise orders the colour and lightness
+            % factors alphabetically, which scrambles which group gets which
+            % pair. Bind them positionally by order of APPEARANCE instead: the
+            % 1st colour level -> teal, 2nd -> mustard, 3rd -> purple; the 1st
+            % lightness level -> dark (primary), 2nd -> light (secondary).
+            g.set_order_options('color', 0, 'lightness', 0);
         otherwise
             error('cnnp_style: unknown palette "%s"', p.Results.palette);
     end

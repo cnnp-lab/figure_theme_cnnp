@@ -60,6 +60,19 @@ function T = cnnp_load_tokens(tokens_path)
     T.dpi             = raw.export.dpi;
     T.widths_mm       = raw.export.widths_mm;            % struct: single/onehalf/double
     T.shapes          = cellstr(raw.shapes);
+
+    % ---- continuous-scale colour stops (resolved to RGB) ----
+    % Palette refs in the token file are dotted strings ("teal.light",
+    % "okabe_ito.vermillion", "greys.light") or the literal "white"; resolve
+    % them against the colour groups so the colormaps stay token-driven.
+    T.scales.sequential.colors = resolve_refs(raw.scales.sequential.colors, raw);
+    T.scales.sequential.values = raw.scales.sequential.values(:);
+    T.scales.gradient.low      = resolve_ref(raw.scales.gradient.low,  raw);
+    T.scales.gradient.high     = resolve_ref(raw.scales.gradient.high, raw);
+    T.scales.diverging.low     = resolve_ref(raw.scales.diverging.low,  raw);
+    T.scales.diverging.mid     = resolve_ref(raw.scales.diverging.mid,  raw);
+    T.scales.diverging.high    = resolve_ref(raw.scales.diverging.high, raw);
+    T.scales.na_value          = resolve_ref(raw.scales.na_value, raw);
 end
 
 % ── local helpers ─────────────────────────────────────────────────────────────
@@ -79,4 +92,36 @@ function out = struct_map_rgb(s)         % struct of name -> [r g b]
     fn  = fieldnames(s);
     out = struct();
     for i = 1:numel(fn), out.(fn{i}) = hex2rgb(s.(fn{i})); end
+end
+
+function M = resolve_refs(refs, raw)     % cellstr/array of refs -> Nx3 RGB
+    refs = cellstr(refs);
+    M = zeros(numel(refs), 3);
+    for i = 1:numel(refs), M(i, :) = resolve_ref(refs{i}, raw); end
+end
+
+function rgb = resolve_ref(ref, raw)
+%RESOLVE_REF  Map a palette reference to RGB. Accepts:
+%   "white"/"black", a literal "#rrggbb", or a dotted "<group>.<name>" where
+%   group is a colour group in the token file (pairs use "<pair>.<dark|light>",
+%   e.g. "teal.light"; others use "<group>.<name>", e.g. "okabe_ito.vermillion",
+%   "greys.light", "neutral.cream").
+    ref = char(ref);
+    switch lower(ref)
+        case 'white', rgb = [1 1 1]; return
+        case 'black', rgb = [0 0 0]; return
+    end
+    if ~isempty(ref) && ref(1) == '#'
+        rgb = hex2rgb(ref); return
+    end
+    parts = strsplit(ref, '.');
+    assert(numel(parts) == 2, 'cnnp_load_tokens: bad colour ref "%s"', ref);
+    grp = parts{1}; nm = parts{2};
+    if isfield(raw.colors.pairs, grp)            % "teal.light" -> pairs.teal.light
+        rgb = hex2rgb(raw.colors.pairs.(grp).(nm));
+    elseif isfield(raw.colors, grp)              % "okabe_ito.vermillion", "greys.light"
+        rgb = hex2rgb(raw.colors.(grp).(nm));
+    else
+        error('cnnp_load_tokens: unknown colour group "%s" in "%s"', grp, ref);
+    end
 end
