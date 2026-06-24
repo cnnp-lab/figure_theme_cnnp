@@ -19,19 +19,22 @@ function cnnp_theme_axes(g, T)
     axlw     = T.line_weights_pt.thin;     % axis line width, points
     fontname = T.font_prefer{1};
     ticklen  = T.tick_len_pt;              % tick length, points
+    gutter   = T.gutter_pt;                % white outer frame width, points
 
     % ── data axes: the cream cards + midnight chrome ──
     axs = g(1).facet_axes_handles;
 
-    % The whole figure is the cream "card" — data panels AND the surrounding
-    % margins/legend (matching the R theme). gramm's `parent` property is
-    % protected in this version, so reach the figure via the axes.
+    % The whole figure is the cream "card" — data panels, margins, and (for
+    % facets) the gaps between panels — with a thin white frame around the outer
+    % edge (matching the R theme, single and multi-panel alike). gramm's `parent`
+    % property is protected in this version, so reach the figure via the axes.
     % InvertHardcopy='off' is essential: MATLAB defaults it to 'on', which forces
-    % backgrounds to WHITE on export/print — so without this the cream shows
+    % backgrounds to WHITE on export/print — so without it the cream shows
     % on-screen but is whitened in the saved file.
     fig = ancestor(axs(1), 'figure');
     if ishghandle(fig)
         set(fig, 'Color', cream, 'InvertHardcopy', 'off');
+        cnnp_draw_frame(fig, gutter);
     end
 
     for ax = reshape(axs, 1, [])
@@ -65,6 +68,17 @@ end
 
 function trySetColor(h, c)
     if ~isempty(h) && ishghandle(h), set(h, 'Color', c); end
+end
+
+function cnnp_draw_frame(fig, gutter_pt)
+%CNNP_DRAW_FRAME  Thin white frame around the cream figure (R-style outer border).
+%   Drawn as a full-figure annotation rectangle: its outline rings the figure
+%   edge (outer half clips off), leaving a thin white border on the cream card.
+%   Removes any frame from a previous call so repeated theming doesn't stack.
+    delete(findall(fig, 'Tag', 'cnnp_frame'));
+    annotation(fig, 'rectangle', [0 0 1 1], 'Color', 'w', ...
+               'FaceColor', 'none', 'LineWidth', 2 * gutter_pt, ...
+               'Tag', 'cnnp_frame');
 end
 
 function L = axis_longest_pt(ax)

@@ -175,5 +175,16 @@ def cnnp_savefig(fig, name: str, out_dir: str | os.PathLike,
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / f"{cnnp_ascii(name)}.{fmt}"
+
+    # R-style thin white frame: the whole figure is the cream card (single and
+    # multi-panel alike — inter-facet gaps stay cream); a thin white border rings
+    # the outer edge. Drawn as a perimeter outline (linewidth in points, so it is
+    # figure-size independent), then removed so the figure isn't mutated.
+    from matplotlib.patches import Rectangle
+    frame = Rectangle((0, 0), 1, 1, transform=fig.transFigure, fill=False,
+                      edgecolor="white", linewidth=2 * tok.gutter_pt,
+                      zorder=1000, clip_on=False)
+    fig.add_artist(frame)
     fig.savefig(path, dpi=tok.dpi, facecolor=fig.get_facecolor())
+    frame.remove()
     return path
