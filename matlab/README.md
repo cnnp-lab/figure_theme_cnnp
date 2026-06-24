@@ -9,6 +9,22 @@ gramm has no native concept of.
 Reads the same [`../cnnp_tokens.json`](../cnnp_tokens.json) as the R adapter.
 Usage rules: [`../GUIDELINES.md`](../GUIDELINES.md).
 
+## Installing gramm
+
+gramm is a hard dependency and is **not** bundled here. Get it once:
+
+```matlab
+% Option A — MATLAB Add-On Explorer: search "gramm" and install (auto-on-path).
+
+% Option B — clone and add to the path:
+%   git clone https://github.com/piermorel/gramm
+addpath('/path/to/gramm');     % add savepath to make it permanent
+```
+
+Check it's available with `exist('gramm', 'class') == 8`. If gramm is installed
+but not on the path when you run the gallery, set `GRAMM_DIR` at the top of
+`test_theme_cnnp.m` and it will `addpath` for you.
+
 ## Status: working (validated in MATLAB R2024b on gramm)
 
 | File | Role |
@@ -81,6 +97,9 @@ pt → mm).
 - **Headless export.** Under `matlab -nodisplay`, `export()` prints a benign
   "cannot use OpenGL for printing" warning and uses software rendering; PNGs are
   fine but slightly softer than an interactive session.
+- **Cream card + white frame.** `cnnp_theme_axes` makes the whole figure cream
+  (data panels, margins, and inter-facet gaps) with a thin white frame around the
+  outer edge — single and multi-panel alike, matching R. No action needed.
 
 ## Possible next steps
 - A `cnnp_gramm` subclass whose constructor pre-applies `cnnp_style` (closest

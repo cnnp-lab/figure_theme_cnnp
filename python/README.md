@@ -30,6 +30,10 @@ uv run python test_theme_cnnp.py     # writes python/test_out/*.png
 
 ## Quick start
 
+`cnnp_theme` is imported directly from this folder (it's not installed as a
+wheel — see `pyproject.toml`), so run from `python/` — e.g. `uv run python
+your_script.py` — or add `python/` to `PYTHONPATH`.
+
 ```python
 import cnnp_theme as cnnp
 import matplotlib.pyplot as plt
@@ -48,6 +52,11 @@ from cnnp_theme.seaborn import cnnp_seaborn
 cnnp_seaborn()                        # sns.set_theme(rc=cnnp_rc()) + palette
 sns.boxplot(df, x="grp", y="val")
 ```
+
+The whole figure is the cream "card" — data panels, margins, and (for facets)
+the gaps between panels — with a thin white frame around the outer edge. This is
+applied automatically by `cnnp_savefig`, single and multi-panel alike, matching
+the R look. No extra call is needed for subplots.
 
 ## Files
 
