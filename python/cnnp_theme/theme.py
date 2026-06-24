@@ -40,10 +40,13 @@ def cnnp_rc(tokens: Tokens | None = None) -> dict:
     cream = tok.neutral["cream"]
 
     return {
-        # backgrounds: white figure (gutter/margin), cream data card
-        "figure.facecolor": "white",
-        "savefig.facecolor": "white",
+        # the whole figure is the cream "card" — data panel AND the surrounding
+        # margins/legend — matching the R theme (white is only a hairline gutter
+        # frame there, which we omit). Set figure + savefig + axes all to cream.
+        "figure.facecolor": cream,
+        "savefig.facecolor": cream,
         "axes.facecolor": cream,
+        "legend.facecolor": cream,
 
         # midnight chrome on every line of ink that isn't data
         "axes.edgecolor": midnight,
@@ -172,5 +175,5 @@ def cnnp_savefig(fig, name: str, out_dir: str | os.PathLike,
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / f"{cnnp_ascii(name)}.{fmt}"
-    fig.savefig(path, dpi=tok.dpi, facecolor="white")
+    fig.savefig(path, dpi=tok.dpi, facecolor=fig.get_facecolor())
     return path

@@ -23,10 +23,16 @@ function cnnp_theme_axes(g, T)
     % ── data axes: the cream cards + midnight chrome ──
     axs = g(1).facet_axes_handles;
 
-    % white outer figure = the inter-panel gutter / margin. gramm's `parent`
-    % property is protected in this version, so reach the figure via the axes.
+    % The whole figure is the cream "card" — data panels AND the surrounding
+    % margins/legend (matching the R theme). gramm's `parent` property is
+    % protected in this version, so reach the figure via the axes.
+    % InvertHardcopy='off' is essential: MATLAB defaults it to 'on', which forces
+    % backgrounds to WHITE on export/print — so without this the cream shows
+    % on-screen but is whitened in the saved file.
     fig = ancestor(axs(1), 'figure');
-    if ishghandle(fig), set(fig, 'Color', 'w'); end
+    if ishghandle(fig)
+        set(fig, 'Color', cream, 'InvertHardcopy', 'off');
+    end
 
     for ax = reshape(axs, 1, [])
         if ~ishghandle(ax) || ~strcmp(get(ax, 'Type'), 'axes'), continue; end
